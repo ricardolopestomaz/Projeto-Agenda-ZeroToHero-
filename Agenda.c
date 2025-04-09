@@ -10,20 +10,22 @@ typedef struct
 } Contato;
 
 // Função para cadastrar um novo contato
-void cadastrar(Contato *agenda, int *numContato, int *modificado)
+void cadastrar(Contato *agenda, int *numContato, int *mudou)
 {
     printf("_____ Cadastro _____\n");
 
     if (*numContato < TAM)
     {
         printf("Nome do contato: ");
-        scanf(" %127[^\n]", agenda[*numContato].nome);
+        fgets(agenda[*numContato].nome, sizeof(agenda[*numContato].nome), stdin);
+        agenda[*numContato].nome[strcspn(agenda[*numContato].nome, "\n")] = '\0'; //Remove
 
         printf("Telefone do contato: ");
-        scanf(" %14[^\n]", agenda[*numContato].telefone);
+        fgets(agenda[*numContato].telefone, sizeof(agenda[*numContato].telefone), stdin);
+        agenda[*numContato].telefone[strcspn(agenda[*numContato].telefone, "\n")] = '\0'; // Remove
 
         (*numContato)++;
-        *modificado = 1;
+        *mudou = 1;
         printf("Contato cadastrado!\n");
     }
     else
@@ -53,7 +55,7 @@ void imprimir(Contato *agenda, int numContato)
 }
 
 // Função para deletar um contato
-void deletar(Contato *agenda, int *numContato, int *modificado)
+void deletar(Contato *agenda, int *numContato, int *mudou)
 {
     printf("_____ Deletar _____\n");
 
@@ -61,7 +63,9 @@ void deletar(Contato *agenda, int *numContato, int *modificado)
     {
         char nomeDeletar[128];
         printf("Informe o nome do contato a ser deletado: ");
-        scanf(" %127[^\n]", nomeDeletar);
+        fgets(nomeDeletar, sizeof(nomeDeletar), stdin);
+        // Remove o caractere de nova linha no final
+        nomeDeletar[strcspn(nomeDeletar, "\n")] = '\0';
 
         int encontrado = 0;
 
@@ -75,7 +79,7 @@ void deletar(Contato *agenda, int *numContato, int *modificado)
                 }
 
                 (*numContato)--;
-                *modificado = 1;
+                *mudou = 1;
                 printf("Contato %s deletado com sucesso.\n", nomeDeletar);
                 encontrado = 1;
                 break;
@@ -96,7 +100,7 @@ void deletar(Contato *agenda, int *numContato, int *modificado)
 // Função para salvar a agenda em arquivo
 void salvarContatos(Contato *agenda, int numContato)
 {
-    FILE *arquivo = fopen("agenda.csv", "w");  // Sobrescreve o arquivo ao salvar
+    FILE *arquivo = fopen("agenda.csv", "w");
     if (arquivo == NULL)
     {
         printf("Erro ao abrir o arquivo para salvar.\n");
@@ -135,7 +139,7 @@ void lerContatos(Contato *agenda, int *numContato)
 int main()
 {
     Contato agenda[TAM];
-    int opcao = 0, modificado = 0;
+    int opcao = 0, mudou = 0;
     int numContato = 0;
 
     // Carrega os contatos do arquivo ao iniciar
@@ -153,23 +157,25 @@ int main()
 
         printf("Escolha uma opcao: ");
         scanf("%d", &opcao);
+        // Limpa o buffer do stdin
+        while (getchar() != '\n');
 
         switch (opcao)
         {
         case 1:
-            cadastrar(agenda, &numContato, &modificado);
+            cadastrar(agenda, &numContato, &mudou);
             break;
         case 2:
             imprimir(agenda, numContato);
             break;
         case 3:
-            deletar(agenda, &numContato, &modificado);
+            deletar(agenda, &numContato, &mudou);
             break;
         case 4:
             salvarContatos(agenda, numContato);
             break;
         case 5:
-            if (modificado == 1)
+            if (mudou == 1)
             {
                 salvarContatos(agenda, numContato);
             }
