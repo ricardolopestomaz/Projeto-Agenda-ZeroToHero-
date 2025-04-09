@@ -36,7 +36,7 @@ void cadastrar(Contato *agenda, int *numContato, int *modificado)
 void imprimir(Contato *agenda, int numContato)
 {
     printf("_____ Imprimir _____\n");
-    
+
     if (numContato > 0)
     {
         for (int i = 0; i < numContato; i++)
@@ -96,7 +96,7 @@ void deletar(Contato *agenda, int *numContato, int *modificado)
 // Função para salvar a agenda em arquivo
 void salvarContatos(Contato *agenda, int numContato)
 {
-    FILE *arquivo = fopen("agenda.csv", "w");
+    FILE *arquivo = fopen("agenda.csv", "w");  // Sobrescreve o arquivo ao salvar
     if (arquivo == NULL)
     {
         printf("Erro ao abrir o arquivo para salvar.\n");
@@ -118,14 +118,15 @@ void lerContatos(Contato *agenda, int *numContato)
     FILE *arquivo = fopen("agenda.csv", "r");
     if (arquivo == NULL)
     {
-        printf("Erro ao abrir o arquivo para leitura.\n");
+        printf("Nenhum arquivo encontrado. Criando um novo...\n");
         return;
     }
 
-    fscanf(arquivo, "%d\n", numContato);
-    for (int i = 0; i < *numContato; i++)
+    *numContato = 0;
+    while (fscanf(arquivo, " %127[^,],%14[^\n]\n", agenda[*numContato].nome, agenda[*numContato].telefone) == 2)
     {
-        fscanf(arquivo, " %127[^,], %14[^\n]\n", agenda[i].nome, agenda[i].telefone);
+        (*numContato)++;
+        if (*numContato >= TAM) break;  // Evita ultrapassar o tamanho do array
     }
 
     fclose(arquivo);
@@ -137,7 +138,7 @@ int main()
     int opcao = 0, modificado = 0;
     int numContato = 0;
 
-    // Carrega os contatos do arquivo
+    // Carrega os contatos do arquivo ao iniciar
     lerContatos(agenda, &numContato);
 
     // Menu de opções
