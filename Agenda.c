@@ -1,112 +1,184 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#define TAM 50
 
-struct Contato {
+// Struct
+typedef struct
+{
     char nome[128];
     char telefone[15];
-};
+} Contato;
 
-int menu(int *PointOpcao) {
-    printf("1- Cadastro de novo contato;\n");
-    printf("2- Imprimir agenda em tela;\n");
-    printf("3- Deletar um contato;\n");
-    printf("4- Salvar em arquivo (formato CSV);\n");
-    printf("5- Sair (ao sair, se houver alterações não salvas, deve salvar os contatos no arquivo);\n");
-    scanf("%d", PointOpcao);
-    return 0;
+// Função para cadastrar um novo contato
+void cadastrar(Contato *agenda, int *numContato, int *modificado)
+{
+    printf("_____ Cadastro _____\n");
+
+    if (*numContato < TAM)
+    {
+        printf("Nome do contato: ");
+        scanf(" %127[^\n]", agenda[*numContato].nome);
+
+        printf("Telefone do contato: ");
+        scanf(" %14[^\n]", agenda[*numContato].telefone);
+
+        (*numContato)++;
+        *modificado = 1;
+        printf("Contato cadastrado!\n");
+    }
+    else
+    {
+        printf("Agenda cheia! Nao e possivel adicionar mais contatos.\n");
+    }
 }
 
-int main() {
-    int opcao;
-    int *PointOpcao = &opcao;
-    int numContato = 0;
-    struct Contato c[50];
+// Função para imprimir a agenda
+void imprimir(Contato *agenda, int numContato)
+{
+    printf("_____ Imprimir _____\n");
     
-    printf("_____ Agenda _____\n");
-    
-    while(numContato < 50 && opcao != 5){
-        menu(PointOpcao);
-        switch (opcao){
-            case 1:
-                if (numContato < 50) {
-                    printf("_____ Cadastro _____\n");
-                    printf("Nome do contato: ");
-                    scanf("%s", c[numContato].nome);
-                    printf("Telefone do contato: ");
-                    scanf("%s", c[numContato].telefone);
-                    printf("Nome cadastrado: %s\n", c[numContato].nome);
-                    printf("Telefone cadastrado: %s\n", c[numContato].telefone);
-                    numContato++;
-                } else {
-                    printf("Agenda cheia!\n");
-                }
-                break;
-            case 2:
-                printf("_____ Imprimir _____\n");
-                for (int i = 0; i < numContato; i++) {
-                    printf("Contato %d:\n", i + 1);
-                    printf("Nome: %s\n", c[i].nome);
-                    printf("Telefone: %s\n", c[i].telefone);
-                }
-                break;
-            case 3:
-                printf("_____ Deletar _____\n");
-                if (numContato == 0) {
-                    printf("Agenda vazia! Não há contatos para deletar.\n");
-                    break;
-                }
-                char nomeDeletar[128];
-                printf("Informe o nome do contato a ser deletado: ");
-                scanf("%s", nomeDeletar);
-                
-                int encontrado = 0;
-                for (int i = 0; i < numContato; i++) {
-                    if (strcmp(c[i].nome, nomeDeletar) == 0) {
-                        // Desloca os contatos para "remover" o contato
-                        for (int j = i; j < numContato - 1; j++) {
-                            c[j] = c[j + 1];
-                        }
-                        numContato--;
-                        printf("Contato %s deletado com sucesso.\n", nomeDeletar);
-                        encontrado = 1;
-                        break;
-                    }
-                }
-                
-                if (!encontrado) {
-                    printf("Contato %s não encontrado.\n", nomeDeletar);
-                }
-                break;
-            case 4:
-                printf("_____ Salvar _____\n");
-                FILE *file = fopen("agenda.csv", "w");
-                if (file == NULL) {
-                    printf("Erro ao abrir o arquivo para salvar.\n");
-                    break;
-                }
-                for (int i = 0; i < numContato; i++) {
-                    fprintf(file, "%s,%s\n", c[i].nome, c[i].telefone);
-                }
-                fclose(file);
-                printf("Contatos salvos no arquivo agenda.csv\n");
-                break;
-            case 5:
-                printf("SAINDO . . .\n");
-                // Salvar automaticamente ao sair
-                FILE *fileExit = fopen("agenda.csv", "w");
-                if (fileExit == NULL) {
-                    printf("Erro ao abrir o arquivo para salvar.\n");
-                    break;
-                }
-                for (int i = 0; i < numContato; i++) {
-                    fprintf(fileExit, "%s,%s\n", c[i].nome, c[i].telefone);
-                }
-                fclose(fileExit);
-                printf("Contatos salvos antes de sair.\n");
-                break;
+    if (numContato > 0)
+    {
+        for (int i = 0; i < numContato; i++)
+        {
+            printf("Contato %d:\n", i + 1);
+            printf("Nome: %s\n", agenda[i].nome);
+            printf("Telefone: %s\n", agenda[i].telefone);
         }
     }
-    
+    else
+    {
+        printf("Agenda vazia! Nao ha contatos para exibir.\n");
+    }
+}
+
+// Função para deletar um contato
+void deletar(Contato *agenda, int *numContato, int *modificado)
+{
+    printf("_____ Deletar _____\n");
+
+    if (*numContato > 0)
+    {
+        char nomeDeletar[128];
+        printf("Informe o nome do contato a ser deletado: ");
+        scanf(" %127[^\n]", nomeDeletar);
+
+        int encontrado = 0;
+
+        for (int i = 0; i < *numContato; i++)
+        {
+            if (strcmp(agenda[i].nome, nomeDeletar) == 0)
+            {
+                for (int j = i; j < *numContato - 1; j++)
+                {
+                    agenda[j] = agenda[j + 1];
+                }
+
+                (*numContato)--;
+                *modificado = 1;
+                printf("Contato %s deletado com sucesso.\n", nomeDeletar);
+                encontrado = 1;
+                break;
+            }
+        }
+
+        if (!encontrado)
+        {
+            printf("Contato %s nao encontrado.\n", nomeDeletar);
+        }
+    }
+    else
+    {
+        printf("Agenda vazia! Nao ha contatos para deletar.\n");
+    }
+}
+
+// Função para salvar a agenda em arquivo
+void salvarContatos(Contato *agenda, int numContato)
+{
+    FILE *arquivo = fopen("agenda.csv", "w");
+    if (arquivo == NULL)
+    {
+        printf("Erro ao abrir o arquivo para salvar.\n");
+        return;
+    }
+
+    for (int i = 0; i < numContato; i++)
+    {
+        fprintf(arquivo, "%s,%s\n", agenda[i].nome, agenda[i].telefone);
+    }
+
+    fclose(arquivo);
+    printf("Contatos salvos no arquivo agenda.csv\n");
+}
+
+// Função para ler os contatos do arquivo
+void lerContatos(Contato *agenda, int *numContato)
+{
+    FILE *arquivo = fopen("agenda.csv", "r");
+    if (arquivo == NULL)
+    {
+        printf("Erro ao abrir o arquivo para leitura.\n");
+        return;
+    }
+
+    fscanf(arquivo, "%d\n", numContato);
+    for (int i = 0; i < *numContato; i++)
+    {
+        fscanf(arquivo, " %127[^,], %14[^\n]\n", agenda[i].nome, agenda[i].telefone);
+    }
+
+    fclose(arquivo);
+}
+
+int main()
+{
+    Contato agenda[TAM];
+    int opcao = 0, modificado = 0;
+    int numContato = 0;
+
+    // Carrega os contatos do arquivo
+    lerContatos(agenda, &numContato);
+
+    // Menu de opções
+    while (opcao != 5)
+    {
+        printf("_____ Agenda _____\n");
+        printf("1 - Cadastro de novo contato\n");
+        printf("2 - Imprimir agenda\n");
+        printf("3 - Deletar um contato\n");
+        printf("4 - Salvar\n");
+        printf("5 - Sair\n");
+
+        printf("Escolha uma opcao: ");
+        scanf("%d", &opcao);
+
+        switch (opcao)
+        {
+        case 1:
+            cadastrar(agenda, &numContato, &modificado);
+            break;
+        case 2:
+            imprimir(agenda, numContato);
+            break;
+        case 3:
+            deletar(agenda, &numContato, &modificado);
+            break;
+        case 4:
+            salvarContatos(agenda, numContato);
+            break;
+        case 5:
+            if (modificado == 1)
+            {
+                salvarContatos(agenda, numContato);
+            }
+            printf("Saindo... Ate logo!\n");
+            break;
+        default:
+            printf("Opcao invalida! Tente novamente.\n");
+            break;
+        }
+    }
+
     return 0;
 }
